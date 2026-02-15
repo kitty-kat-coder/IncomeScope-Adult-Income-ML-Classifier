@@ -1,0 +1,8 @@
+numpy
+pandas
+scikit-learn
+xgboost-cpu
+joblib
+streamlit
+matplotlib
+seaborn
