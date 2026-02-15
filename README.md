@@ -22,10 +22,11 @@ The training script downloads the dataset automatically and stores:
 ## Project Structure
 
 ```text
-project-folder/
+IncomeScope-Adult-Income-ML-Classifier/
 |-- app.py
 |-- train_models.py
 |-- requirements.txt
+|-- runtime.txt
 |-- README.md
 |-- data/
 |-- model/
@@ -33,14 +34,16 @@ project-folder/
 
 ## Preprocessing Pipeline
 
-The same preprocessing strategy is used for all models:
+The project uses model-specific preprocessing for better performance:
 
 1. Replace missing placeholders (`?`) with null values.
 2. Handle missing values:
    - numeric columns: median imputation
    - categorical columns: most-frequent imputation
-3. Encode categorical variables with one-hot encoding (`handle_unknown="ignore"`).
-4. Scale numeric variables using `StandardScaler`.
+3. Apply model-specific encoding:
+   - Logistic Regression, Decision Tree, KNN, XGBoost: one-hot encoding (`handle_unknown="ignore"`)
+   - Random Forest, Naive Bayes: ordinal encoding (`unknown_value=-1`)
+4. Apply scaling for one-hot pipelines where required.
 5. Split data with stratification:
    - train: 80%
    - test: 20%
@@ -54,7 +57,7 @@ The same preprocessing strategy is used for all models:
 5. Random Forest
 6. XGBoost
 
-All models use the same preprocessing pipeline and are saved in `model/` using `joblib`.
+All models are saved in `model/` using compressed `joblib` artifacts.
 
 ## Evaluation Metrics
 
@@ -73,18 +76,18 @@ The comparison table is exported to:
 
 | Model | Accuracy | AUC | Precision | Recall | F1 Score | MCC |
 |---|---:|---:|---:|---:|---:|---:|
-| XGBoost | 0.8742 | 0.9298 | 0.7887 | 0.6480 | 0.7114 | 0.6370 |
-| Random Forest | 0.8589 | 0.9058 | 0.7398 | 0.6334 | 0.6825 | 0.5955 |
+| XGBoost | 0.8765 | 0.9294 | 0.7957 | 0.6514 | 0.7164 | 0.6437 |
+| Random Forest | 0.8670 | 0.9184 | 0.7744 | 0.6270 | 0.6930 | 0.6148 |
+| Decision Tree | 0.8637 | 0.9087 | 0.7868 | 0.5902 | 0.6745 | 0.6002 |
 | Logistic Regression | 0.8524 | 0.9042 | 0.7414 | 0.5885 | 0.6562 | 0.5699 |
-| KNN | 0.8443 | 0.8876 | 0.7050 | 0.6009 | 0.6488 | 0.5525 |
-| Decision Tree | 0.8141 | 0.7475 | 0.6098 | 0.6198 | 0.6148 | 0.4923 |
-| Naive Bayes | 0.6204 | 0.8287 | 0.3794 | 0.9213 | 0.5374 | 0.3866 |
+| KNN | 0.8475 | 0.8955 | 0.7168 | 0.5997 | 0.6530 | 0.5599 |
+| Naive Bayes | 0.8033 | 0.6537 | 0.7227 | 0.2887 | 0.4126 | 0.3683 |
 
 ## Observations
 
-- XGBoost is the best-performing model across F1, MCC, and AUC.
-- Random Forest is the second-best option with balanced performance.
-- Naive Bayes has very high recall but low precision, so it over-predicts the positive class.
+- XGBoost remains the strongest overall model by F1, MCC, AUC, and accuracy.
+- Random Forest and Decision Tree show strong accuracy with good interpretability.
+- Naive Bayes accuracy improved after tuning but shows lower AUC and F1 than tree-based models.
 - Decision threshold tuning materially changes precision-recall trade-offs and is exposed in the app sidebar.
 
 ## How to Run Locally
@@ -105,7 +108,7 @@ python train_models.py
 4. Launch Streamlit app:
 
 ```bash
-streamlit run app.py
+python -m streamlit run app.py
 ```
 
 ## Streamlit App Features
@@ -124,6 +127,7 @@ streamlit run app.py
 2. Ensure these files exist at repository root:
    - `app.py`
    - `requirements.txt`
+   - `runtime.txt`
    - `model/` artifacts (or generate in a build step)
    - `data/` references used by app
 3. In Streamlit Community Cloud:
